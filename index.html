@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🔒 Gatekeeper | Anti-VPN & Anti-Incognito Shield</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* main vault card */
+        .shield-container {
+            max-width: 720px;
+            width: 100%;
+            background: rgba(12, 20, 30, 0.75);
+            backdrop-filter: blur(18px);
+            border-radius: 3rem;
+            border: 1px solid rgba(0, 255, 255, 0.25);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 255, 0.1) inset;
+            transition: all 0.2s ease;
+        }
+
+        .inner-panel {
+            padding: 2rem 2rem 2.2rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 212, 255, 0.12);
+            border-radius: 100px;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #7ee0ff;
+            letter-spacing: 0.3px;
+            margin-bottom: 1.5rem;
+            border: 0.5px solid rgba(0, 255, 255, 0.4);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #F0F9FF 0%, #a0e7ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.3px;
+        }
+
+        .sub {
+            color: #8e9aaf;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            border-left: 3px solid #2ad4b6;
+            padding-left: 1rem;
+        }
+
+        /* status cards */
+        .status-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .status-card {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(70, 130, 200, 0.3);
+            transition: all 0.2s;
+        }
+
+        .status-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #6c86a3;
+            margin-bottom: 0.8rem;
+        }
+
+        .status-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .shield-icon {
+            font-size: 1.7rem;
+        }
+
+        .verdict-safe {
+            color: #2ee6a8;
+            text-shadow: 0 0 6px rgba(46, 230, 168, 0.3);
+        }
+
+        .verdict-danger {
+            color: #ff5e7c;
+            text-shadow: 0 0 4px rgba(255, 94, 124, 0.4);
+        }
+
+        .verdict-warning {
+            color: #ffbc6e;
+        }
+
+        .access-block {
+            background: rgba(255, 40, 80, 0.15);
+            border-radius: 1.8rem;
+            padding: 1.4rem;
+            margin: 1.8rem 0 1rem;
+            border: 1px solid rgba(255, 70, 100, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .access-grant {
+            background: rgba(40, 210, 140, 0.12);
+            border-radius: 1.8rem;
+            padding: 1.4rem;
+            border: 1px solid rgba(46, 230, 168, 0.5);
+        }
+
+        .hidden-content {
+            display: none;
+        }
+
+        .visible-content {
+            display: block;
+        }
+
+        button {
+            background: rgba(20, 30, 55, 0.9);
+            border: 1px solid #2ad4b6;
+            padding: 0.7rem 1.4rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #c0e0ff;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.75rem;
+        }
+
+        button:hover {
+            background: #2ad4b620;
+            color: #ffffff;
+            border-color: #6effe0;
+            transform: scale(0.98);
+        }
+
+        .recheck-btn {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-color: #3b82f6;
+        }
+
+        .footer-note {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 2rem;
+            color: #5a6e8a;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1.2rem;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: #2ad4b6;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="shield-container" id="appRoot">
+    <div class="inner-panel">
+        <div class="badge">
+            <span>🛡️ ACTIVE DEFENSE</span>
+        </div>
+        <h1>anti‑VPN · anti‑incognito</h1>
+        <div class="sub">Real‑time behavioral & network guard — untrusted environments are blocked</div>
+
+        <!-- status overview cards -->
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="status-label">🔍 VPN / PROXY STATUS</div>
+                <div class="status-value" id="vpnStatusDisplay">
+                    <span class="loader"></span> scanning...
+                </div>
+            </div>
+            <div class="status-card">
+                <div class="status-label">🕵️ PRIVATE / INCOGNITO MODE</div>
+                <div class="status-value" id="incognitoStatusDisplay">
+                    <span class="loader"></span> analyzing...
+                </div>
+            </div>
+        </div>
+
+        <!-- dynamic access panel -->
+        <div id="accessPanel">
+            <div class="access-block" id="blockedMessage">
+                <div class="flex-row" style="justify-content: space-between; align-items: center;">
+                    <span style="font-weight: bold;">⛔ ACCESS DENIED</span>
+                    <span>⚠️</span>
+                </div>
+                <div style="margin-top: 12px; font-size: 0.9rem;" id="denyReason">
+                    Security restrictions active. VPN/proxy or private browsing detected.
+                </div>
+                <button id="retryBtn" class="recheck-btn">⟳ RE-ANALYZE CONNECTION</button>
+            </div>
+            <div class="access-grant hidden-content" id="grantedMessage">
+                <div class="flex-row" style="justify-content: space-between;">
+                    <span style="font-weight: bold;">✅ SECURE ACCESS GRANTED</span>
+                    <span>🔓</span>
+                </div>
+                <div style="margin-top: 12px; font-size: 0.9rem;">
+                    ✓ Clean network environment & standard browsing mode verified.<br>
+                    You may access protected resources.
+                </div>
+                <!-- dummy protected preview -->
+                <div style="margin-top: 18px; background: rgba(0,0,0,0.3); border-radius: 1.2rem; padding: 0.8rem; font-size: 0.85rem; border-left: 3px solid #2ee6a8;">
+                    🔐 <strong>Protected zone</strong> — unrestricted content available.
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            ⚡ Real‑time detection: IP reputation (proxy/VPN) + browser private mode fingerprinting.
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ------------- DOM elements -------------
+        const vpnStatusSpan = document.getElementById('vpnStatusDisplay');
+        const incognitoStatusSpan = document.getElementById('incognitoStatusDisplay');
+        const blockedDiv = document.getElementById('blockedMessage');
+        const grantedDiv = document.getElementById('grantedMessage');
+        const retryButton = document.getElementById('retryBtn');
+        const denyReasonSpan = document.getElementById('denyReason');
+
+        // state flags
+        let isVpnDetected = false;      // true = VPN/proxy active
+        let isIncognitoDetected = false; // true = private/incognito mode
+        let checksCompleted = false;
+
+        // ---------- 1. INCognito detection (multi‑layer, robust) ----------
+        async function detectIncognitoMode() {
+            // Collection of test results (any true = incognito)
+            let incognitoFlags = [];
+
+            // --- test A: localStorage (catches Safari private & some browsers) ---
+            try {
+                localStorage.setItem('__incog_test__', '1');
+                localStorage.removeItem('__incog_test__');
+                // if we reach here, localStorage works (not incognito due to this test)
+            } catch(e) {
+                // Safari private, old Firefox private? catches safely
+                incognitoFlags.push(true);
+                console.warn("[incognito] localStorage throws error:", e);
+            }
+
+            // --- test B: IndexedDB (quota / security errors in private mode) ---
+            try {
+                const idbTest = new Promise((resolve) => {
+                    const request = indexedDB.open('__incog_idb_test__', 1);
+                    let timeoutId = setTimeout(() => resolve(false), 800);
+                    request.onerror = (event) => {
+                        clearTimeout(timeoutId);
+                        // QuotaExceededError or SecurityError (private mode)
+                        if (event.target.error && (event.target.error.name === 'QuotaExceededError' || event.target.error.name === 'SecurityError')) {
+                            resolve(true);
+                        } else {
+                            resolve(false);
+                        }
+                    };
+                    request.onsuccess = (event) => {
+                        clearTimeout(timeoutId);
+                        const db = event.target.result;
+                        if (db) {
+                            try {
+                                // try to create an object store to stress quota
+                                if (!db.objectStoreNames.contains('store')) {
+                                    db.createObjectStore('store', { autoIncrement: true });
+                                }
+                                const transaction = db.transaction(['store'], 'readwrite');
+                                const store = transaction.objectStore('store');
+                                store.put({ data: 'test' }, 'key1');
+                                transaction.oncomplete = () => {
+                                    db.close();
+                                    indexedDB.deleteDatabase('__incog_idb_test__');
+                                    resolve(false);
+                                };
+                                transaction.onerror = () => {
+                                    db.close();
+                                    indexedDB.deleteDatabase('__incog_idb_test__');
+                                    resolve(true);
+                                };
+                            } catch (err) {
+                                db.close();
+                                indexedDB.deleteDatabase('__incog_idb_test__');
+                                resolve(true);
+                            }
+                        } else {
+                            resolve(false);
+                        }
+                    };
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('store')) {
+                            db.createObjectStore('store', { autoIncrement: true });
+                        }
+                    };
+                });
+                const idbResult = await idbTest;
+                if (idbResult) incognitoFlags.push(true);
+            } catch (idbGlobalErr) {
+                incognitoFlags.push(true);
+            }
+
+            // --- test C: StorageManager quota heuristic (incognito often has lower quota) ---
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                try {
+                    const estimate = await navigator.storage.estimate();
+                    const quotaBytes = estimate.quota || 0;
+                    const quotaMB = quotaBytes / (1024 * 1024);
+                    // typical regular mode: > 1GB on desktop, incognito chromium ~ 300-400MB
+                    // firefox private mode might also show lower limit, setting threshold <= 350MB high confidence
+                    if (quotaMB < 350 && quotaMB > 0) {
+                        console.log(`[incognito] storage quota low: ${quotaMB.toFixed(0)} MB -> possible private mode`);
+                        incognitoFlags.push(true);
+                    }
+                    // Additional: check persisted? not reliable alone but as extra
+                } catch(e) { /* ignore quota failure */ }
+            }
+
+            // --- test D: fileSystem API (Chromium incognito legacy, still effective on some builds) ---
+            const fileSystemTest = new Promise((resolve) => {
+                if (window.webkitRequestFileSystem || window.RequestFileSystem) {
+                    const fs = window.webkitRequestFileSystem || window.RequestFileSystem;
+                    try {
+                        fs(window.TEMPORARY, 20, () => resolve(false), () => resolve(true));
+                    } catch(e) {
+                        resolve(true);
+                    }
+                } else {
+                    resolve(false);
+                }
+            });
+            const fsResult = await fileSystemTest;
+            if (fsResult) incognitoFlags.push(true);
+
+            // --- test E: navigator.storage.persist? not direct, but combine ---
+            // final decision: if ANY of the flags is true -> incognito likely
+            return incognitoFlags.includes(true);
+        }
+
+        // ---------- 2. VPN / PROXY detection via trusted external API (ipapi.co) ----------
+        async function detectVpnProxy() {
+            // using ipapi.co - returns 'proxy' field true for VPN, proxy, hosting, TOR
+            // endpoint: https://ipapi.co/json/  (CORS enabled, no API key)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+
+            try {
+                const response = await fetch('https://ipapi.co/json/', {
+                    signal: controller.signal,
+                    headers: { 'Accept': 'application/json' }
+                });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                // ipapi.co provides: 'proxy' (bool) -> true means VPN, proxy, or Tor
+                // also 'hosting' field can be true for datacenter IP, but we trust 'proxy' as main vpn indicator
+                const isProxy = data.proxy === true;
+                const isHosting = data.hosting === true; // extra flag, might indicate VPS/VPN provider
+                const vpnDetected = (isProxy === true) || (isHosting === true);
+                // Additional metadata: org name with known vpn keywords? simple version
+                let orgName = (data.org || '').toLowerCase();
+                const vpnKeywords = ['vpn', 'proxy', 'hosting', 'datacenter', 'cloudflare', 'm247', 'ovh', 'digitalocean', 'vultr', 'linode', 'aws', 'amazon', 'azure', 'google cloud'];
+                let keywordMatch = false;
+                if (orgName) {
+                    keywordMatch = vpnKeywords.some(kw => orgName.includes(kw));
+                }
+                const finalVerdict = vpnDetected || keywordMatch;
+                return {
+                    isVpn: finalVerdict,
+                    details: {
+                        ip: data.ip || 'unknown',
+                        proxyFlag: isProxy,
+                        hostingFlag: isHosting,
+                        org: data.org || 'N/A'
+                    }
+                };
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.warn("VPN detection API error:", err);
+                // In case of network failure / adblock, we assume safe? but to be strict we treat as "undetermined"
+                // But for strict anti-vpn we do NOT block on API failure? Better to not block because false positive risk,
+                // but we return null, and later we handle: API error -> consider "no vpn" but show warning state.
+                return { isVpn: false, error: true, details: null };
+            }
+        }
+
+        // ---------- 3. update UI based on combined verdict ----------
+        function updateAccessUI() {
+            const threatDetected = isVpnDetected || isIncognitoDetected;
+            if (threatDetected) {
+                // block access
+                blockedDiv.classList.remove('hidden-content');
+                grantedDiv.classList.add('hidden-content');
+                // customize denial reason
+                let reasons = [];
+                if (isVpnDetected) reasons.push("🔒 VPN / Proxy / Datacenter IP detected");
+                if (isIncognitoDetected) reasons.push("🕵️ Private / Incognito browsing mode active");
+                denyReasonSpan.innerHTML = reasons.join(" · ") + "<br><span style='font-size:0.75rem; opacity:0.8'>Access restricted until environment is clean.</span>";
+            } else {
+                // full access granted
+                blockedDiv.classList.add('hidden-content');
+                grantedDiv.classList.remove('hidden-content');
+            }
+        }
+
+        // update status panel texts
+        function updateStatusDisplay() {
+            // VPN status
+            if (isVpnDetected) {
+                vpnStatusSpan.innerHTML = `<span class="verdict-danger">⚠️ VPN/PROXY ACTIVE</span> <span style="font-size:1rem;">🛡️</span>`;
+            } else {
+                vpnStatusSpan.innerHTML = `<span class="verdict-safe">✓ CLEAN (no VPN/proxy)</span> <span>🌍</span>`;
+            }
+            // Incognito status
+            if (isIncognitoDetected) {
+                incognitoStatusSpan.innerHTML = `<span class="verdict-danger">⚠️ PRIVATE MODE DETECTED</span> <span>👤</span>`;
+            } else {
+                incognitoStatusSpan.innerHTML = `<span class="verdict-safe">✓ STANDARD MODE</span> <span>🔓</span>`;
+            }
+        }
+
+        // show loading spinners until detection ready
+        function setLoadingState() {
+            vpnStatusSpan.innerHTML = `<span class="loader"></span> scanning IP & proxy...`;
+            incognitoStatusSpan.innerHTML = `<span class="loader"></span> testing storage & behavior...`;
+            blockedDiv.classList.remove('hidden-content');
+            grantedDiv.classList.add('hidden-content');
+            denyReasonSpan.innerHTML = "🔄 Running deep security checks (VPN + incognito fingerprinting)...";
+        }
+
+        // MAIN DETECTION ENGINE (parallel)
+        async function runFullSecurityScan() {
+            setLoadingState();
+            checksCompleted = false;
+            // reset flags
+            isVpnDetected = false;
+            isIncognitoDetected = false;
+
+            // launch both detection tasks in parallel
+            const vpnPromise = detectVpnProxy();
+            const incognitoPromise = detectIncognitoMode();
+
+            const [vpnResult, incognitoResult] = await Promise.all([vpnPromise, incognitoPromise]);
+
+            // process VPN result
+            if (vpnResult && !vpnResult.error) {
+                isVpnDetected = vpnResult.isVpn === true;
+                // if vpnResult had extra details but main flag determines
+                if (vpnResult.isVpn) {
+                    console.log("[VPN] Proxy or hosting flagged");
+                }
+            } else if (vpnResult && vpnResult.error) {
+                // API failed: we assume no VPN to avoid locking out legit users if detection server fails
+                // but we show a soft warning? For strictness, we keep as "safe", but user can retry.
+                console.warn("VPN API failed, fallback: treat as safe");
+                isVpnDetected = false;
+                // Option: display api warning but not block. (prevent false block)
+                vpnStatusSpan.innerHTML = `<span class="verdict-warning">⚠️ CHECK FAILED</span> <span>(API) - assume clean</span>`;
+            } else {
+                isVpnDetected = false;
+            }
+
+            // incognito detection result (boolean)
+            isIncognitoDetected = (incognitoResult === true);
+
+            // UPDATE UI
+            updateStatusDisplay();
+            updateAccessUI();
+            checksCompleted = true;
+        }
+
+        // manual retry / refresh all checks
+        async function manualRetry() {
+            // reset UI to loading
+            setLoadingState();
+            await runFullSecurityScan();
+        }
+
+        // apply event listener for retry button
+        retryButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            manualRetry().catch(console.warn);
+        });
+
+        // ---------- additional webRTC & anti-tamper: just to avoid realtime overrides, we also put a backup detection for incognito if needed ----------
+        // extra fallback: using notification permission detection? but not needed.
+
+        // on load start full scan
+        runFullSecurityScan().catch(err => {
+            console.error('security scan fatal', err);
+            // fallback UI: show error, but not grant
+            blockedDiv.classList.remove('hidden-content');
+            grantedDiv.classList.add('hidden-content');
+            denyReasonSpan.innerHTML = "⚠️ Security engine error — please refresh & allow external IP check.";
+            vpnStatusSpan.innerHTML = `<span class="verdict-warning">⚠️ ERROR</span>`;
+            incognitoStatusSpan.innerHTML = `<span class="verdict-warning">⚠️ ERROR</span>`;
+        });
+
+        // optional: double-check if window focus / visibility API triggers re-check? but not needed, manual recheck available.
+        // Edge: if user disables localStorage etc already caught by incognito detection.
+
+        // additional console Warnings for debugging but not needed for user.
+    })();
+</script>
+</body>
+</html>
