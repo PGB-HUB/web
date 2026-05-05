@@ -96,14 +96,19 @@
         </div>
     </div>
 
-    <script type="module">
-        import jsDetectIncognitoPrivateBrowsing from 'https://cdn.jsdelivr.net/npm/js-detect-incognito-private-browsing@1.0.5/+esm';
-        
+    <!-- Your requested library -->
+    <script src="https://cdn.jsdelivr.net/gh/Joe12387/detectIncognito@main/dist/es5/detectIncognito.min.js"></script>
+    
+    <script>
         const statusDiv = document.getElementById('status');
         
         async function checkIncognito() {
+            statusDiv.className = 'status loading';
+            statusDiv.innerHTML = '🔍 Checking browser mode...';
+            
             try {
-                const result = await jsDetectIncognitoPrivateBrowsing();
+                // Using the detectIncognito library
+                const result = await detectIncognito();
                 
                 if (result.isPrivate) {
                     statusDiv.className = 'status private';
@@ -113,7 +118,6 @@
                     statusDiv.innerHTML = '✅ NORMAL MODE ✅<br><small>Private browsing is NOT active</small>';
                 }
                 
-                // Optional: Send result to server
                 console.log('Detection result:', result);
                 
             } catch (error) {
@@ -123,8 +127,14 @@
             }
         }
         
-        // Run detection on page load
-        await checkIncognito();
+        // Wait for library to load then run
+        window.addEventListener('load', function() {
+            if (typeof detectIncognito !== 'undefined') {
+                checkIncognito();
+            } else {
+                statusDiv.innerHTML = '⚠️ Library failed to load ⚠️';
+            }
+        });
         
         // Make function global for button click
         window.checkAgain = checkIncognito;
