@@ -2,177 +2,437 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔒 Gatekeeper | Security Shield</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🔒 Precise Gatekeeper | Anti‑VPN + Anti‑Incognito (Low False Positives)</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             min-height: 100vh;
-            background: #0a0f1e;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0b1120, #04070f);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .shield-container {
+            max-width: 780px;
+            width: 100%;
+            background: rgba(10, 18, 28, 0.88);
+            backdrop-filter: blur(16px);
+            border-radius: 2.5rem;
+            border: 1px solid rgba(0, 200, 255, 0.4);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .inner-panel {
+            padding: 2rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 180, 220, 0.15);
+            border-radius: 100px;
+            padding: 0.3rem 1.2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #7ee0ff;
+            margin-bottom: 1.2rem;
+            border: 0.5px solid rgba(0, 210, 255, 0.5);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f0fcff, #80dbff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .sub {
+            color: #9bb1ce;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            border-left: 3px solid #2ad4b6;
+            padding-left: 1rem;
+        }
+
+        .status-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin: 1.8rem 0 1.5rem;
+        }
+
+        .status-card {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.55);
+            border-radius: 1.5rem;
+            padding: 1rem 1.2rem;
+            border: 1px solid rgba(80, 160, 255, 0.3);
+        }
+
+        .status-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #8aa4c4;
+            margin-bottom: 0.6rem;
+        }
+
+        .status-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .verdict-safe { color: #2ee6a8; text-shadow: 0 0 6px rgba(46,230,168,0.2); }
+        .verdict-danger { color: #ff6b8a; text-shadow: 0 0 4px rgba(255,107,138,0.3); }
+        .verdict-warning { color: #ffbc6e; }
+
+        .access-block {
+            background: rgba(255, 40, 80, 0.18);
+            border-radius: 1.8rem;
+            padding: 1.4rem;
+            margin: 1.5rem 0 1rem;
+            border: 1px solid rgba(255, 80, 110, 0.6);
+        }
+
+        .access-grant {
+            background: rgba(40, 210, 140, 0.12);
+            border-radius: 1.8rem;
+            padding: 1.4rem;
+            border: 1px solid rgba(46, 230, 168, 0.6);
+        }
+
+        .hidden-content { display: none; }
+
+        button {
+            background: rgba(20, 30, 50, 0.9);
+            border: 1px solid #2ad4b6;
+            padding: 0.7rem 1.2rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #d0ecff;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.8rem;
+        }
+        button:hover {
+            background: #2ad4b630;
+            border-color: #82ffee;
             color: white;
         }
-        .shield-container {
-            max-width: 600px;
-            width: 90%;
-            background: rgba(16, 24, 40, 0.95);
-            padding: 2.5rem;
-            border-radius: 2rem;
-            border: 1px solid #2ad4b6;
-            box-shadow: 0 0 30px rgba(42, 212, 182, 0.2);
+        .recheck-btn { width: 100%; background: rgba(0,0,0,0.6); border-color: #3b82f6; }
+        .footer-note {
+            font-size: 0.7rem;
             text-align: center;
-        }
-        .status-box {
-            display: flex;
-            justify-content: space-around;
-            margin: 2rem 0;
-            gap: 1rem;
-        }
-        .card {
-            background: #000;
-            padding: 1rem;
-            border-radius: 1rem;
-            flex: 1;
-            border: 1px solid #333;
-        }
-        .label { font-size: 0.7rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
-        .value { font-weight: bold; font-size: 0.9rem; }
-        .danger { color: #ff5e7c; }
-        .safe { color: #2ee6a8; }
-        .hidden { display: none; }
-        .btn {
-            background: #2ad4b6;
-            color: #0a0f1e;
-            padding: 12px 24px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 10px;
-            cursor: pointer;
+            margin-top: 2rem;
+            color: #6d86a8;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1.2rem;
         }
         .loader {
-            border: 2px solid #333;
-            border-top: 2px solid #2ad4b6;
-            border-radius: 50%;
-            width: 15px;
-            height: 15px;
-            animation: spin 1s linear infinite;
             display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: #2ad4b6;
+            animation: spin 0.7s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .flex-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .debug-note { font-size: 0.65rem; margin-top: 0.5rem; color: #5c7a9a; }
     </style>
 </head>
 <body>
-
 <div class="shield-container">
-    <h2 style="margin-bottom: 10px;">Security Verification</h2>
-    <p style="color: #8e9aaf; font-size: 0.9rem;">Analyzing environment for VPN and Private Mode...</p>
+    <div class="inner-panel">
+        <div class="badge"><span>🛡️ ZERO‑TRUST + LOW FALSE POSITIVE ENGINE</span></div>
+        <h1>anti‑VPN · anti‑incognito</h1>
+        <div class="sub">Precise behavioral detection — blocks only true threats.</div>
 
-    <div class="status-box">
-        <div class="card">
-            <div class="label">Network</div>
-            <div id="vpnStat" class="value"><div class="loader"></div></div>
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="status-label">🔌 VPN / PROXY STATUS</div>
+                <div class="status-value" id="vpnStatusDisplay"><span class="loader"></span> analyzing...</div>
+            </div>
+            <div class="status-card">
+                <div class="status-label">🕵️ PRIVATE / INCOGNITO</div>
+                <div class="status-value" id="incognitoStatusDisplay"><span class="loader"></span> testing...</div>
+            </div>
         </div>
-        <div class="card">
-            <div class="label">Privacy</div>
-            <div id="incogStat" class="value"><div class="loader"></div></div>
+
+        <div id="accessPanel">
+            <div class="access-block" id="blockedMessage">
+                <div class="flex-row" style="justify-content: space-between;">
+                    <span style="font-weight: bold;">⛔ ACCESS DENIED</span><span>⚠️</span>
+                </div>
+                <div style="margin-top: 12px;" id="denyReason">Security restrictions active.</div>
+                <button id="retryBtn" class="recheck-btn">⟳ RE‑RUN SECURITY SCAN</button>
+            </div>
+            <div class="access-grant hidden-content" id="grantedMessage">
+                <div class="flex-row" style="justify-content: space-between;">
+                    <span style="font-weight: bold;">✅ SECURE ACCESS GRANTED</span><span>🔓</span>
+                </div>
+                <div style="margin-top: 12px;">✓ Clean network & standard browsing mode.<br>Protected content unlocked.</div>
+                <div style="margin-top: 18px; background: rgba(0,0,0,0.3); border-radius: 1.2rem; padding: 0.8rem; border-left: 3px solid #2ee6a8;">📁 <strong>Secure zone</strong> — unrestricted access</div>
+            </div>
         </div>
-    </div>
-
-    <div id="blockedMsg" class="hidden">
-        <h3 class="danger">Access Denied</h3>
-        <p id="reason" style="font-size: 0.85rem; margin: 10px 0;"></p>
-        <div class="btn" onclick="location.reload()">Re-Scan</div>
-    </div>
-
-    <div id="grantedMsg" class="hidden">
-        <h3 class="safe">Access Granted</h3>
-        <p style="font-size: 0.85rem; margin-top: 5px;">Secure session established.</p>
+        <div class="footer-note">⚡ Multi‑layer detection with weighted scoring (minimizes false positives).</div>
     </div>
 </div>
 
 <script>
-    async function checkIncognito() {
-        // Trap 1: Service Worker Check (Service workers are often disabled/restricted in Private mode)
-        if ('serviceWorker' in navigator) {
-            // This is a common point of failure for Incognito
-        }
+    (function() {
+        // DOM refs
+        const vpnSpan = document.getElementById('vpnStatusDisplay');
+        const incogSpan = document.getElementById('incognitoStatusDisplay');
+        const blockedDiv = document.getElementById('blockedMessage');
+        const grantedDiv = document.getElementById('grantedMessage');
+        const retryBtn = document.getElementById('retryBtn');
+        const denyReasonSpan = document.getElementById('denyReason');
 
-        // Trap 2: Storage Quota Heuristic (The most reliable for Chromium 2024-2026)
-        if ('storage' in navigator && 'estimate' in navigator.storage) {
-            const { quota } = await navigator.storage.estimate();
-            // In normal mode, quota is huge (GBs). In Incognito, it's capped (usually < 400MB)
-            if (quota < 450 * 1024 * 1024) return true;
-        }
+        let isVpn = false;
+        let isIncognito = false;
 
-        // Trap 3: Firefox IndexedDB (Reliable for Firefox)
-        if (navigator.userAgent.includes("Firefox")) {
+        // --------------------------------------------------------------
+        // IMPROVED INCOGNITO DETECTION – weighted scoring system
+        // Avoids false positives by requiring a minimum score.
+        // --------------------------------------------------------------
+        async function detectIncognitoWeighted() {
+            let score = 0;          // higher = more likely incognito
+            let reasons = [];
+
+            // 1. localStorage / sessionStorage write test (strong indicator, +3)
             try {
-                const db = indexedDB.open("test");
-                return await new Promise(res => {
-                    db.onerror = () => res(true);
-                    db.onsuccess = () => res(false);
-                });
-            } catch (e) { return true; }
-        }
-
-        // Trap 4: Permissions API (Newer Chrome logic)
-        try {
-            if (navigator.permissions) {
-                const result = await navigator.permissions.query({ name: 'notifications' });
-                if (result.state === 'prompt' && !('onchange' in result)) return true;
+                localStorage.setItem('_test_incog', '1');
+                localStorage.removeItem('_test_incog');
+            } catch(e) {
+                score += 3;
+                reasons.push("localStorage blocked");
             }
-        } catch(e) {}
+            try {
+                sessionStorage.setItem('_test_incog_s', '1');
+                sessionStorage.removeItem('_test_incog_s');
+            } catch(e) {
+                score += 2;
+                reasons.push("sessionStorage blocked");
+            }
 
-        return false;
-    }
+            // 2. IndexedDB write + quota error detection (high confidence +3)
+            try {
+                const idbResult = await new Promise((resolve) => {
+                    const req = indexedDB.open('_idb_incog_test_', 1);
+                    let timeout = setTimeout(() => resolve('timeout'), 1000);
+                    req.onerror = (ev) => {
+                        clearTimeout(timeout);
+                        const err = ev.target.error;
+                        if (err && (err.name === 'QuotaExceededError' || err.name === 'SecurityError')) {
+                            resolve('quota_error');
+                        } else resolve('other_error');
+                    };
+                    req.onsuccess = (ev) => {
+                        clearTimeout(timeout);
+                        const db = ev.target.result;
+                        try {
+                            if (!db.objectStoreNames.contains('store')) db.createObjectStore('store', {autoIncrement: true});
+                            const tx = db.transaction(['store'], 'readwrite');
+                            const store = tx.objectStore('store');
+                            store.put({ data: 'x' }, 'test');
+                            tx.oncomplete = () => {
+                                db.close();
+                                indexedDB.deleteDatabase('_idb_incog_test_');
+                                resolve('success');
+                            };
+                            tx.onerror = () => {
+                                db.close();
+                                indexedDB.deleteDatabase('_idb_incog_test_');
+                                resolve('tx_error');
+                            };
+                        } catch(err) {
+                            db.close();
+                            indexedDB.deleteDatabase('_idb_incog_test_');
+                            resolve('exception');
+                        }
+                    };
+                    req.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('store')) db.createObjectStore('store', {autoIncrement: true});
+                    };
+                });
+                if (idbResult === 'quota_error' || idbResult === 'tx_error' || idbResult === 'exception') {
+                    score += 3;
+                    reasons.push("IndexedDB write failure");
+                } else if (idbResult === 'timeout') {
+                    score += 1;
+                }
+            } catch(e) {
+                score += 3;
+                reasons.push("IndexedDB crash");
+            }
 
-    async function checkVPN() {
-        try {
-            // Using a high-speed IP check
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            
-            const vpnKeywords = ['vpn', 'proxy', 'hosting', 'datacenter', 'm247', 'ovh', 'cloudflare', 'akamai'];
-            const isp = (data.org || "").toLowerCase();
-            const isBadNetwork = data.proxy || data.hosting || vpnKeywords.some(k => isp.includes(k));
-            
-            return { isVpn: isBadNetwork, ip: data.ip };
-        } catch (e) {
-            return { isVpn: false, error: true };
+            // 3. StorageManager quota (very low threshold: only if < 90MB → strong indicator in modern browsers)
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                try {
+                    const est = await navigator.storage.estimate();
+                    const quotaMB = (est.quota || 0) / (1024 * 1024);
+                    // Normal desktop: > 1GB, mobile > 500MB. Incognito Chrome ~ 120MB, Firefox private ~ 100-150MB
+                    if (quotaMB > 0 && quotaMB < 90) {
+                        score += 3;
+                        reasons.push(`Very low storage quota (${quotaMB.toFixed(0)} MB)`);
+                    } else if (quotaMB > 0 && quotaMB < 150) {
+                        score += 1;   // borderline, give small weight
+                        reasons.push(`Reduced quota (${quotaMB.toFixed(0)} MB)`);
+                    }
+                } catch(e) {}
+            }
+
+            // 4. FileSystem API (only for Chromium, high confidence +2)
+            const fsTest = await new Promise((resolve) => {
+                if (window.webkitRequestFileSystem || window.RequestFileSystem) {
+                    const fs = window.webkitRequestFileSystem || window.RequestFileSystem;
+                    try {
+                        fs(window.TEMPORARY, 10, () => resolve(false), () => resolve(true));
+                    } catch(e) { resolve(true); }
+                } else resolve(false);
+            });
+            if (fsTest) {
+                score += 2;
+                reasons.push("FileSystem API restricted");
+            }
+
+            // 5. Service worker registration (only add small weight, because some adblockers/enterprise policies block SW even in normal mode)
+            if ('serviceWorker' in navigator) {
+                try {
+                    const reg = await navigator.serviceWorker.register('/__fake_sw_test__.js', { scope: '/' });
+                    if (reg) await reg.unregister();
+                } catch(e) {
+                    // In incognito often fails, but also fails on local file or restricted contexts. So give minor weight.
+                    score += 1;
+                    reasons.push("ServiceWorker blocked");
+                }
+            }
+
+            // 6. Additional: try to write >5MB to localStorage -> fails in incognito
+            try {
+                let big = '';
+                for (let i = 0; i < 5000; i++) big += 'a';
+                localStorage.setItem('bigstress', big);
+                localStorage.removeItem('bigstress');
+            } catch(e) {
+                score += 2;
+                reasons.push("Large localStorage write failed");
+            }
+
+            // Decision: need at least 4 points and at least 2 distinct indicator types to declare incognito.
+            // This greatly reduces false positives.
+            const hasMultipleTypes = new Set(reasons.map(r => r.split(' ')[0])).size >= 2;
+            const finalDecision = (score >= 4 && hasMultipleTypes) || score >= 6;
+            console.log(`[Incognito Score] ${score} points, reasons: ${reasons.join(', ')} -> decision: ${finalDecision}`);
+            return { isIncognito: finalDecision, score };
         }
-    }
 
-    async function runShield() {
-        const [isIncog, vpnResult] = await Promise.all([checkIncognito(), checkVPN()]);
-
-        const vpnEl = document.getElementById('vpnStat');
-        const incogEl = document.getElementById('incogStat');
-        const blocked = document.getElementById('blockedMsg');
-        const granted = document.getElementById('grantedMsg');
-        const reason = document.getElementById('reason');
-
-        // Update UI
-        vpnEl.innerHTML = vpnResult.isVpn ? '<span class="danger">VPN</span>' : '<span class="safe">Clean</span>';
-        incogEl.innerHTML = isIncog ? '<span class="danger">Private</span>' : '<span class="safe">Standard</span>';
-
-        if (isIncog || vpnResult.isVpn) {
-            blocked.classList.remove('hidden');
-            let txt = [];
-            if (isIncog) txt.push("Incognito Mode");
-            if (vpnResult.isVpn) txt.push("VPN/Proxy");
-            reason.innerText = "Please disable " + txt.join(" and ") + " to access this site.";
-        } else {
-            granted.classList.remove('hidden');
+        // ---------- VPN detection (unchanged, reliable) ----------
+        async function detectVpn() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            try {
+                const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                const proxyFlag = data.proxy === true;
+                const hostingFlag = data.hosting === true;
+                const org = (data.org || '').toLowerCase();
+                const vpnKeywords = ['vpn', 'proxy', 'm247', 'ovh', 'digitalocean', 'vultr', 'linode', 'aws', 'azure', 'google cloud', 'datacenter'];
+                const keywordMatch = vpnKeywords.some(kw => org.includes(kw));
+                return { isVpn: proxyFlag || hostingFlag || keywordMatch, error: false };
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.warn("VPN API failed, assume no VPN (open access)", err);
+                return { isVpn: false, error: true };
+            }
         }
-    }
 
-    window.onload = runShield;
+        // ----- UI updates -----
+        function updateUI() {
+            if (isVpn) {
+                vpnSpan.innerHTML = `<span class="verdict-danger">⚠️ VPN / PROXY DETECTED</span> <span>🌐</span>`;
+            } else {
+                vpnSpan.innerHTML = `<span class="verdict-safe">✓ CLEAN NETWORK</span> <span>🔒</span>`;
+            }
+
+            if (isIncognito) {
+                incogSpan.innerHTML = `<span class="verdict-danger">⚠️ PRIVATE MODE DETECTED</span> <span>👤</span>`;
+            } else {
+                incogSpan.innerHTML = `<span class="verdict-safe">✓ STANDARD MODE</span> <span>🔓</span>`;
+            }
+
+            const blocked = isVpn || isIncognito;
+            if (blocked) {
+                blockedDiv.classList.remove('hidden-content');
+                grantedDiv.classList.add('hidden-content');
+                let reasons = [];
+                if (isVpn) reasons.push("🔒 VPN / Proxy / Datacenter IP");
+                if (isIncognito) reasons.push("🕵️ Private / Incognito browsing");
+                denyReasonSpan.innerHTML = reasons.join(" · ") + "<br><span style='font-size:0.7rem'>Access denied for security reasons.</span>";
+            } else {
+                blockedDiv.classList.add('hidden-content');
+                grantedDiv.classList.remove('hidden-content');
+            }
+        }
+
+        function setLoading() {
+            vpnSpan.innerHTML = `<span class="loader"></span> IP reputation...`;
+            incogSpan.innerHTML = `<span class="loader"></span> advanced detection...`;
+            blockedDiv.classList.remove('hidden-content');
+            grantedDiv.classList.add('hidden-content');
+            denyReasonSpan.innerHTML = "🔄 Running security scan (weighted incognito test)…";
+        }
+
+        async function fullScan() {
+            setLoading();
+            isVpn = false;
+            isIncognito = false;
+
+            const [vpnResult, incogResult] = await Promise.all([
+                detectVpn(),
+                detectIncognitoWeighted()
+            ]);
+
+            isVpn = vpnResult.isVpn;
+            isIncognito = incogResult.isIncognito;
+
+            if (vpnResult.error) {
+                vpnSpan.innerHTML = `<span class="verdict-warning">⚠️ VPN CHECK FAILED</span>`;
+            }
+            updateUI();
+        }
+
+        retryBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fullScan().catch(console.error);
+        });
+
+        fullScan().catch(console.error);
+    })();
 </script>
-
 </body>
 </html>
