@@ -3,933 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Multi-Layer Security Detection</title>
+    <title>Incognito Mode Detection</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
+        
         .container {
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             border-radius: 20px;
             padding: 40px;
-            max-width: 900px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-height: 90vh;
-            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
         }
-
+        
+        .status {
+            font-size: 24px;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .private {
+            background-color: #fee;
+            color: #c00;
+            border: 2px solid #c00;
+        }
+        
+        .normal {
+            background-color: #efe;
+            color: #080;
+            border: 2px solid #080;
+        }
+        
+        .loading {
+            background-color: #eef;
+            color: #66a;
+        }
+        
+        button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            background-color: #5a67d8;
+        }
+        
         h1 {
             color: #333;
             margin-bottom: 10px;
-            text-align: center;
-            font-size: 2em;
         }
-
-        .subtitle {
-            text-align: center;
+        
+        .info {
             color: #666;
-            margin-bottom: 30px;
-            font-size: 0.9em;
+            font-size: 14px;
+            margin-top: 20px;
         }
-
-        .detection-panel {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #667eea;
-        }
-
-        .detection-title {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.1em;
-        }
-
-        .status {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: bold;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .status.safe {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status.warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status.danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .status.checking {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .details {
-            margin-top: 10px;
-            font-size: 0.85em;
-            color: #555;
-            line-height: 1.6;
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-        }
-
+        
         .icon {
-            font-size: 1.5em;
-        }
-
-        .blocked-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .blocked-content {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            max-width: 500px;
-            animation: slideIn 0.3s;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .blocked-content h2 {
-            color: #dc3545;
+            font-size: 50px;
             margin-bottom: 20px;
-        }
-
-        .blocked-content p {
-            color: #666;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Ad blocker bait elements - multiple variations */
-        .ad, .ads, .ad-container, .ad-banner, .advertisement, .ad-zone, 
-        .textads, .banner-ads, .google-ad, .adsbox, .ad-placeholder,
-        .pub_300x250, .pub_300x250m, .pub_728x90, .ad-header {
-            width: 1px !important;
-            height: 1px !important;
-            position: absolute !important;
-            top: -1px !important;
-            left: -1px !important;
-            opacity: 0 !important;
-        }
-
-        .btn {
-            background: #667eea;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
-
-        .btn:hover {
-            background: #5568d3;
-        }
-
-        .check-list {
-            list-style: none;
-            margin-top: 10px;
-        }
-
-        .check-list li {
-            padding: 5px 0;
-            font-size: 0.85em;
-        }
-
-        .check-list li:before {
-            content: "• ";
-            color: #667eea;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
-    <!-- Ad blocker bait elements - multiple variations for better detection -->
-    <div class="ad" id="ad"></div>
-    <div class="ads" id="ads"></div>
-    <div class="ad-container" id="ad-container"></div>
-    <div class="ad-banner" id="ad-banner"></div>
-    <div class="advertisement" id="advertisement"></div>
-    <div class="ad-zone" id="ad-zone"></div>
-    <div class="textads" id="textads"></div>
-    <div class="banner-ads" id="banner-ads"></div>
-    <div class="google-ad" id="google-ad"></div>
-    <div class="adsbox" id="adsbox"></div>
-    <div class="ad-placeholder" id="ad-placeholder"></div>
-    <div class="pub_300x250" id="pub_300x250"></div>
-    <div class="pub_300x250m" id="pub_300x250m"></div>
-    <div class="pub_728x90" id="pub_728x90"></div>
-    <div class="ad-header" id="ad-header"></div>
-
-    <!-- Blocked overlay -->
-    <div class="blocked-overlay" id="blockedOverlay">
-        <div class="blocked-content">
-            <h2>⛔ Access Denied</h2>
-            <p id="blockReason">Security restrictions detected. Please disable them to access this website.</p>
-            <button class="btn" onclick="location.reload()">Reload Page</button>
-        </div>
-    </div>
-
     <div class="container">
-        <h1>🛡️ Multi-Layer Security Detection</h1>
-        <p class="subtitle">Advanced detection with multiple fallback systems</p>
-
-        <!-- VPN Detection Panel -->
-        <div class="detection-panel">
-            <div class="detection-title">
-                <span class="icon">🌐</span>
-                <span>VPN/Proxy Detection</span>
-            </div>
-            <div id="vpnStatus" class="status checking">
-                <span class="loading"></span> Running multiple checks...
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="vpnProgress"></div></div>
-            <div class="details" id="vpnDetails">
-                <ul class="check-list" id="vpnCheckList">
-                    <li>Initializing detection systems...</li>
-                </ul>
-            </div>
+        <div class="icon">🕵️</div>
+        <h1>Browser Detection</h1>
+        <div id="status" class="status loading">
+            🔍 Checking browser mode...
         </div>
-
-        <!-- Incognito Detection Panel -->
-        <div class="detection-panel">
-            <div class="detection-title">
-                <span class="icon">🕵️</span>
-                <span>Incognito/Private Mode Detection</span>
-            </div>
-            <div id="incognitoStatus" class="status checking">
-                <span class="loading"></span> Testing browser...
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="incognitoProgress"></div></div>
-            <div class="details" id="incognitoDetails">
-                <ul class="check-list" id="incognitoCheckList">
-                    <li>Initializing detection methods...</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Ad Blocker Detection Panel -->
-        <div class="detection-panel">
-            <div class="detection-title">
-                <span class="icon">🚫</span>
-                <span>Ad Blocker Detection</span>
-            </div>
-            <div id="adBlockStatus" class="status checking">
-                <span class="loading"></span> Testing elements...
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="adBlockProgress"></div></div>
-            <div class="details" id="adBlockDetails">
-                <ul class="check-list" id="adBlockCheckList">
-                    <li>Initializing detection tests...</li>
-                </ul>
-            </div>
+        <button onclick="checkAgain()">Check Again</button>
+        <div class="info">
+            This test detects private/incognito browsing modes
         </div>
     </div>
 
-    <script>
-        // Configuration
-        const CONFIG = {
-            blockVPN: true,
-            blockIncognito: true,
-            blockAdBlocker: true,
-            strictMode: false, // Set to true for immediate blocking
-            debugMode: false // Set to true to see console logs
-        };
-
-        // Detection results
-        const detectionResults = {
-            vpn: { detected: false, confidence: 0, methods: [] },
-            incognito: { detected: false, confidence: 0, methods: [] },
-            adBlocker: { detected: false, confidence: 0, methods: [] }
-        };
-
-        // Utility functions
-        function log(...args) {
-            if (CONFIG.debugMode) console.log(...args);
-        }
-
-        function updateProgress(type, percent) {
-            const progressEl = document.getElementById(`${type}Progress`);
-            if (progressEl) progressEl.style.width = `${percent}%`;
-        }
-
-        function addCheckItem(listId, text, status = 'neutral') {
-            const list = document.getElementById(listId);
-            if (!list) return;
-            
-            const li = document.createElement('li');
-            const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⏳';
-            li.textContent = `${icon} ${text}`;
-            list.appendChild(li);
-        }
-
-        // ===== VPN DETECTION =====
-        async function detectVPN() {
-            const checks = [];
-            let totalChecks = 5;
-            let completedChecks = 0;
-
-            addCheckItem('vpnCheckList', 'Starting VPN detection...', 'neutral');
-
-            // Check 1: WebRTC Leak Detection
-            try {
-                addCheckItem('vpnCheckList', 'Testing WebRTC leaks...', 'neutral');
-                const webrtcIPs = await getWebRTCIPs();
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-                
-                if (webrtcIPs.length > 1) {
-                    checks.push({ method: 'WebRTC Leak', detected: true, confidence: 70 });
-                    addCheckItem('vpnCheckList', `Multiple IPs detected via WebRTC (${webrtcIPs.length})`, 'fail');
-                } else {
-                    addCheckItem('vpnCheckList', 'WebRTC check: Single IP found', 'pass');
-                }
-                log('WebRTC IPs:', webrtcIPs);
-            } catch (e) {
-                addCheckItem('vpnCheckList', 'WebRTC test completed', 'pass');
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 2: Timezone Mismatch with Multiple APIs
-            try {
-                addCheckItem('vpnCheckList', 'Checking timezone consistency...', 'neutral');
-                const browserTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                
-                // Try multiple APIs
-                const apis = [
-                    'https://ipapi.co/json/',
-                    'https://ipwhois.app/json/',
-                    'http://ip-api.com/json/'
-                ];
-
-                let ipData = null;
-                for (const api of apis) {
-                    try {
-                        const response = await fetch(api);
-                        if (response.ok) {
-                            ipData = await response.json();
-                            break;
-                        }
-                    } catch (e) {
-                        log(`API ${api} failed:`, e);
-                    }
-                }
-
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-
-                if (ipData) {
-                    const ipTZ = ipData.timezone || ipData.time_zone;
-                    if (ipTZ && browserTZ !== ipTZ) {
-                        checks.push({ method: 'Timezone Mismatch', detected: true, confidence: 60 });
-                        addCheckItem('vpnCheckList', `Timezone mismatch: ${browserTZ} ≠ ${ipTZ}`, 'fail');
-                    } else {
-                        addCheckItem('vpnCheckList', `Timezone matches: ${browserTZ}`, 'pass');
-                    }
-
-                    // Check ISP/Organization name for VPN keywords
-                    const org = ipData.org || ipData.isp || '';
-                    const vpnKeywords = ['vpn', 'proxy', 'hosting', 'datacenter', 'server', 'cloud', 'virtual'];
-                    if (vpnKeywords.some(keyword => org.toLowerCase().includes(keyword))) {
-                        checks.push({ method: 'ISP Analysis', detected: true, confidence: 80 });
-                        addCheckItem('vpnCheckList', `Suspicious ISP: ${org}`, 'fail');
-                    } else {
-                        addCheckItem('vpnCheckList', `ISP looks normal: ${org}`, 'pass');
-                    }
-                } else {
-                    addCheckItem('vpnCheckList', 'Timezone check: Unable to verify', 'neutral');
-                }
-            } catch (e) {
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-                addCheckItem('vpnCheckList', 'Timezone check completed', 'neutral');
-            }
-
-            // Check 3: Language/Locale Mismatch
-            try {
-                addCheckItem('vpnCheckList', 'Analyzing language settings...', 'neutral');
-                const browserLang = navigator.language;
-                const systemLangs = navigator.languages;
-                
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-                
-                // This is a weak signal but can add to confidence
-                if (systemLangs.length > 5) {
-                    checks.push({ method: 'Language Analysis', detected: true, confidence: 20 });
-                    addCheckItem('vpnCheckList', `Multiple languages configured (${systemLangs.length})`, 'fail');
-                } else {
-                    addCheckItem('vpnCheckList', 'Language settings normal', 'pass');
-                }
-            } catch (e) {
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 4: DNS Leak Test (Indirect)
-            try {
-                addCheckItem('vpnCheckList', 'Testing DNS configuration...', 'neutral');
-                // Check if connection characteristics suggest VPN
-                const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-                
-                if (connection && connection.effectiveType === 'slow-2g') {
-                    addCheckItem('vpnCheckList', 'Slow connection detected (possible VPN)', 'fail');
-                } else {
-                    addCheckItem('vpnCheckList', 'Connection speed normal', 'pass');
-                }
-            } catch (e) {
-                completedChecks++;
-                updateProgress('vpn', (completedChecks / totalChecks) * 100);
-            }
-
-            // Calculate final result
-            updateProgress('vpn', 100);
-            
-            const totalConfidence = checks.reduce((sum, check) => sum + (check.detected ? check.confidence : 0), 0);
-            const avgConfidence = checks.length > 0 ? totalConfidence / checks.length : 0;
-            const vpnDetected = totalConfidence > 80; // Threshold
-
-            detectionResults.vpn = {
-                detected: vpnDetected,
-                confidence: avgConfidence,
-                methods: checks
-            };
-
-            updateVPNStatus(vpnDetected, checks, avgConfidence);
-        }
-
-        function updateVPNStatus(detected, checks, confidence) {
-            const statusEl = document.getElementById('vpnStatus');
-
-            if (detected) {
-                statusEl.className = 'status danger';
-                statusEl.textContent = `❌ VPN/Proxy Detected (${Math.round(confidence)}% confidence)`;
-                addCheckItem('vpnCheckList', `VERDICT: VPN/Proxy likely in use`, 'fail');
-                
-                if (CONFIG.blockVPN && CONFIG.strictMode) {
-                    blockAccess('VPN or Proxy detected. Please disable your VPN to access this site.');
-                }
-            } else {
-                statusEl.className = 'status safe';
-                statusEl.textContent = '✅ No VPN Detected';
-                addCheckItem('vpnCheckList', 'VERDICT: Connection appears normal', 'pass');
-            }
-        }
-
-        // WebRTC IP Detection
-        async function getWebRTCIPs() {
-            return new Promise((resolve) => {
-                const ips = [];
-                const RTCPeerConnection = window.RTCPeerConnection || 
-                                         window.mozRTCPeerConnection || 
-                                         window.webkitRTCPeerConnection;
-
-                if (!RTCPeerConnection) {
-                    resolve(ips);
-                    return;
-                }
-
-                const pc = new RTCPeerConnection({
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' }
-                    ]
-                });
-
-                pc.createDataChannel('');
-                pc.createOffer().then(offer => pc.setLocalDescription(offer));
-
-                pc.onicecandidate = (event) => {
-                    if (!event || !event.candidate) {
-                        pc.close();
-                        resolve([...new Set(ips)]);
-                        return;
-                    }
-
-                    const candidate = event.candidate.candidate;
-                    const ipMatch = /([0-9]{1,3}\.){3}[0-9]{1,3}/.exec(candidate);
-                    
-                    if (ipMatch && !ips.includes(ipMatch[0])) {
-                        ips.push(ipMatch[0]);
-                    }
-                };
-
-                setTimeout(() => {
-                    pc.close();
-                    resolve([...new Set(ips)]);
-                }, 2000);
-            });
-        }
-
-        // ===== INCOGNITO MODE DETECTION =====
-        async function detectIncognito() {
-            const checks = [];
-            let totalChecks = 6;
-            let completedChecks = 0;
-
-            addCheckItem('incognitoCheckList', 'Starting incognito detection...', 'neutral');
-
-            // Check 1: Storage Quota (Most reliable for Chrome)
-            try {
-                addCheckItem('incognitoCheckList', 'Testing storage quota...', 'neutral');
-                if ('storage' in navigator && 'estimate' in navigator.storage) {
-                    const estimate = await navigator.storage.estimate();
-                    const quota = estimate.quota;
-                    
-                    // Normal Chrome: ~60GB, Incognito: ~120MB
-                    if (quota < 120000000) {
-                        checks.push({ method: 'Storage Quota', detected: true, confidence: 90 });
-                        addCheckItem('incognitoCheckList', `Low quota detected: ${Math.round(quota/1024/1024)}MB`, 'fail');
-                    } else {
-                        addCheckItem('incognitoCheckList', `Normal quota: ${Math.round(quota/1024/1024)}MB`, 'pass');
-                    }
-                }
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            } catch (e) {
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 2: IndexedDB (Firefox)
-            try {
-                addCheckItem('incognitoCheckList', 'Testing IndexedDB...', 'neutral');
-                await new Promise((resolve) => {
-                    const db = indexedDB.open('test');
-                    db.onerror = () => {
-                        checks.push({ method: 'IndexedDB', detected: true, confidence: 85 });
-                        addCheckItem('incognitoCheckList', 'IndexedDB blocked (Firefox private)', 'fail');
-                        resolve();
-                    };
-                    db.onsuccess = () => {
-                        addCheckItem('incognitoCheckList', 'IndexedDB accessible', 'pass');
-                        resolve();
-                    };
-                    setTimeout(resolve, 100);
-                });
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            } catch (e) {
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 3: LocalStorage test (Safari)
-            try {
-                addCheckItem('incognitoCheckList', 'Testing localStorage...', 'neutral');
-                localStorage.setItem('test', '1');
-                localStorage.removeItem('test');
-                addCheckItem('incognitoCheckList', 'localStorage working', 'pass');
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            } catch (e) {
-                if (e.code === DOMException.QUOTA_EXCEEDED_ERR && localStorage.length === 0) {
-                    checks.push({ method: 'LocalStorage', detected: true, confidence: 80 });
-                    addCheckItem('incognitoCheckList', 'localStorage quota exceeded (Safari private)', 'fail');
-                }
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 4: RequestFileSystem (Older Chrome)
-            try {
-                addCheckItem('incognitoCheckList', 'Testing FileSystem API...', 'neutral');
-                if (window.RequestFileSystem || window.webkitRequestFileSystem) {
-                    await new Promise((resolve) => {
-                        const requestFileSystem = window.RequestFileSystem || window.webkitRequestFileSystem;
-                        requestFileSystem(window.TEMPORARY, 1, 
-                            () => {
-                                addCheckItem('incognitoCheckList', 'FileSystem accessible', 'pass');
-                                resolve();
-                            },
-                            () => {
-                                checks.push({ method: 'FileSystem', detected: true, confidence: 75 });
-                                addCheckItem('incognitoCheckList', 'FileSystem blocked', 'fail');
-                                resolve();
-                            }
-                        );
-                    });
-                } else {
-                    addCheckItem('incognitoCheckList', 'FileSystem API not available', 'neutral');
-                }
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            } catch (e) {
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 5: Session Storage behavior
-            try {
-                addCheckItem('incognitoCheckList', 'Testing sessionStorage...', 'neutral');
-                const testKey = '__incognito_test__';
-                sessionStorage.setItem(testKey, 'test');
-                const stored = sessionStorage.getItem(testKey);
-                sessionStorage.removeItem(testKey);
-                addCheckItem('incognitoCheckList', 'sessionStorage working', 'pass');
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            } catch (e) {
-                checks.push({ method: 'SessionStorage', detected: true, confidence: 60 });
-                addCheckItem('incognitoCheckList', 'sessionStorage restricted', 'fail');
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            }
-
-            // Check 6: Safari openDatabase test
-            try {
-                addCheckItem('incognitoCheckList', 'Testing WebSQL...', 'neutral');
-                const isSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1;
-                if (isSafari && window.openDatabase) {
-                    try {
-                        window.openDatabase(null, null, null, null);
-                        addCheckItem('incognitoCheckList', 'WebSQL accessible (Safari normal)', 'pass');
-                    } catch (e) {
-                        checks.push({ method: 'WebSQL', detected: true, confidence: 85 });
-                        addCheckItem('incognitoCheckList', 'WebSQL blocked (Safari private)', 'fail');
-                    }
-                } else {
-                    addCheckItem('incognitoCheckList', 'WebSQL not available', 'neutral');
-                }
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            } catch (e) {
-                completedChecks++;
-                updateProgress('incognito', (completedChecks / totalChecks) * 100);
-            }
-
-            updateProgress('incognito', 100);
-
-            const totalConfidence = checks.reduce((sum, check) => sum + (check.detected ? check.confidence : 0), 0);
-            const avgConfidence = checks.length > 0 ? totalConfidence / checks.length : 0;
-            const incognitoDetected = totalConfidence > 70;
-
-            detectionResults.incognito = {
-                detected: incognitoDetected,
-                confidence: avgConfidence,
-                methods: checks
-            };
-
-            updateIncognitoStatus(incognitoDetected, checks, avgConfidence);
-        }
-
-        function updateIncognitoStatus(detected, checks, confidence) {
-            const statusEl = document.getElementById('incognitoStatus');
-
-            if (detected) {
-                statusEl.className = 'status danger';
-                statusEl.textContent = `❌ Incognito/Private Mode (${Math.round(confidence)}% confidence)`;
-                addCheckItem('incognitoCheckList', 'VERDICT: Private browsing detected', 'fail');
-                
-                if (CONFIG.blockIncognito && CONFIG.strictMode) {
-                    blockAccess('Incognito/Private mode detected. Please use normal browsing mode.');
-                }
-            } else {
-                statusEl.className = 'status safe';
-                statusEl.textContent = '✅ Normal Browsing Mode';
-                addCheckItem('incognitoCheckList', 'VERDICT: Normal browsing mode', 'pass');
-            }
-        }
-
-        // ===== AD BLOCKER DETECTION =====
-        function detectAdBlocker() {
-            const checks = [];
-            let totalChecks = 4;
-            let completedChecks = 0;
-
-            addCheckItem('adBlockCheckList', 'Starting ad blocker detection...', 'neutral');
-
-            // Check 1: Bait element visibility
-            addCheckItem('adBlockCheckList', 'Testing bait elements...', 'neutral');
-            const baitElements = [
-                'ad', 'ads', 'ad-container', 'ad-banner', 'advertisement', 
-                'ad-zone', 'textads', 'banner-ads', 'google-ad', 'adsbox',
-                'ad-placeholder', 'pub_300x250', 'pub_300x250m', 'pub_728x90', 'ad-header'
-            ];
-
-            let blockedCount = 0;
-            for (const id of baitElements) {
-                const element = document.getElementById(id);
-                if (element) {
-                    const style = window.getComputedStyle(element);
-                    if (style.display === 'none' || style.visibility === 'hidden' || element.offsetHeight === 0) {
-                        blockedCount++;
-                    }
-                }
-            }
-
-            completedChecks++;
-            updateProgress('adBlock', (completedChecks / totalChecks) * 100);
-
-            if (blockedCount > 3) {
-                checks.push({ method: 'Bait Elements', detected: true, confidence: 90 });
-                addCheckItem('adBlockCheckList', `${blockedCount}/${baitElements.length} bait elements hidden`, 'fail');
-            } else {
-                addCheckItem('adBlockCheckList', `Bait elements visible (${baitElements.length - blockedCount}/${baitElements.length})`, 'pass');
-            }
-
-            // Check 2: Dynamic element injection
-            setTimeout(() => {
-                addCheckItem('adBlockCheckList', 'Testing dynamic injection...', 'neutral');
-                try {
-                    const testAd = document.createElement('div');
-                    testAd.innerHTML = '&nbsp;';
-                    testAd.className = 'adsbox ad-test-element';
-                    testAd.style.position = 'absolute';
-                    testAd.style.top = '-1px';
-                    testAd.style.left = '-1px';
-                    testAd.style.width = '1px';
-                    testAd.style.height = '1px';
-                    document.body.appendChild(testAd);
-                    
-                    setTimeout(() => {
-                        const style = window.getComputedStyle(testAd);
-                        if (testAd.offsetHeight === 0 || style.display === 'none') {
-                            checks.push({ method: 'Dynamic Injection', detected: true, confidence: 85 });
-                            addCheckItem('adBlockCheckList', 'Dynamic elements blocked', 'fail');
-                        } else {
-                            addCheckItem('adBlockCheckList', 'Dynamic elements working', 'pass');
-                        }
-                        document.body.removeChild(testAd);
-                        
-                        completedChecks++;
-                        updateProgress('adBlock', (completedChecks / totalChecks) * 100);
-                        finishAdBlockDetection(checks, completedChecks, totalChecks);
-                    }, 100);
-                } catch (e) {
-                    completedChecks++;
-                    updateProgress('adBlock', (completedChecks / totalChecks) * 100);
-                    finishAdBlockDetection(checks, completedChecks, totalChecks);
-                }
-            }, 100);
-
-            // Check 3: Check for common ad blocker extensions
-            addCheckItem('adBlockCheckList', 'Checking browser extensions...', 'neutral');
-            setTimeout(() => {
-                // Check for uBlock Origin, AdBlock Plus, etc.
-                if (typeof window.uBlock !== 'undefined' || 
-                    typeof window.adblockplus !== 'undefined') {
-                    checks.push({ method: 'Extension Detection', detected: true, confidence: 95 });
-                    addCheckItem('adBlockCheckList', 'Ad blocker extension detected', 'fail');
-                } else {
-                    addCheckItem('adBlockCheckList', 'No known extensions found', 'pass');
-                }
-                completedChecks++;
-                updateProgress('adBlock', (completedChecks / totalChecks) * 100);
-            }, 200);
-
-            // Check 4: Test external ad script loading
-            addCheckItem('adBlockCheckList', 'Testing script loading...', 'neutral');
-            setTimeout(() => {
-                // Check if common ad scripts would be blocked
-                const scriptTest = document.createElement('div');
-                scriptTest.setAttribute('data-ad-slot', '1234567890');
-                scriptTest.className = 'adsbygoogle';
-                document.body.appendChild(scriptTest);
-                
-                setTimeout(() => {
-                    const computed = window.getComputedStyle(scriptTest);
-                    if (computed.display === 'none') {
-                        checks.push({ method: 'Script Loading', detected: true, confidence: 80 });
-                        addCheckItem('adBlockCheckList', 'Ad scripts being blocked', 'fail');
-                    } else {
-                        addCheckItem('adBlockCheckList', 'Scripts loading normally', 'pass');
-                    }
-                    document.body.removeChild(scriptTest);
-                    
-                    completedChecks++;
-                    updateProgress('adBlock', (completedChecks / totalChecks) * 100);
-                }, 100);
-            }, 300);
-        }
-
-        function finishAdBlockDetection(checks, completedChecks, totalChecks) {
-            if (completedChecks >= totalChecks) {
-                updateProgress('adBlock', 100);
-                
-                const totalConfidence = checks.reduce((sum, check) => sum + (check.detected ? check.confidence : 0), 0);
-                const avgConfidence = checks.length > 0 ? totalConfidence / checks.length : 0;
-                const adBlockDetected = totalConfidence > 80;
-
-                detectionResults.adBlocker = {
-                    detected: adBlockDetected,
-                    confidence: avgConfidence,
-                    methods: checks
-                };
-
-                updateAdBlockerStatus(adBlockDetected, checks, avgConfidence);
-                checkAndBlock();
-            }
-        }
-
-        function updateAdBlockerStatus(detected, checks, confidence) {
-            const statusEl = document.getElementById('adBlockStatus');
-
-            if (detected) {
-                statusEl.className = 'status danger';
-                statusEl.textContent = `❌ Ad Blocker Detected (${Math.round(confidence)}% confidence)`;
-                addCheckItem('adBlockCheckList', 'VERDICT: Ad blocker is active', 'fail');
-                
-                if (CONFIG.blockAdBlocker && CONFIG.strictMode) {
-                    blockAccess('Ad blocker detected. Please disable your ad blocker to access this site.');
-                }
-            } else {
-                statusEl.className = 'status safe';
-                statusEl.textContent = '✅ No Ad Blocker Detected';
-                addCheckItem('adBlockCheckList', 'VERDICT: No ad blocker found', 'pass');
-            }
-        }
-
-        // ===== BLOCKING FUNCTION =====
-        function blockAccess(reason) {
-            const overlay = document.getElementById('blockedOverlay');
-            const reasonEl = document.getElementById('blockReason');
-            reasonEl.textContent = reason;
-            overlay.style.display = 'flex';
-        }
-
-        function checkAndBlock() {
-            if (!CONFIG.strictMode) {
-                const issues = [];
-                if (detectionResults.vpn.detected && CONFIG.blockVPN) issues.push('VPN/Proxy');
-                if (detectionResults.incognito.detected && CONFIG.blockIncognito) issues.push('Incognito Mode');
-                if (detectionResults.adBlocker.detected && CONFIG.blockAdBlocker) issues.push('Ad Blocker');
-
-                if (issues.length > 0) {
-                    setTimeout(() => {
-                        blockAccess(`The following restrictions are detected: ${issues.join(', ')}. Please disable them to access this site.`);
-                    }, 1000);
-                }
-            }
-        }
-
-        // ===== INITIALIZE ALL DETECTIONS =====
-        window.addEventListener('DOMContentLoaded', () => {
-            log('Starting all detection systems...');
-            
-            // Run detections in sequence
-            detectVPN();
-            detectIncognito();
-            
-            // Delay ad blocker detection to ensure DOM is ready
-            setTimeout(detectAdBlocker, 500);
-        });
-
-        // Security measures
-        document.addEventListener('contextmenu', (e) => e.preventDefault());
-        document.addEventListener('keydown', (e) => {
-            // Block DevTools shortcuts
-            if (e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-                (e.ctrlKey && e.key === 'u')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Detect DevTools opening
-        let devtoolsOpen = false;
-        const element = new Image();
-        Object.defineProperty(element, 'id', {
-            get: function() {
-                devtoolsOpen = true;
-                if (CONFIG.strictMode) {
-                    blockAccess('Developer tools detected. Please close DevTools to access this site.');
-                }
-            }
-        });
+    <script type="module">
+        import jsDetectIncognitoPrivateBrowsing from 'https://cdn.jsdelivr.net/npm/js-detect-incognito-private-browsing@1.0.5/+esm';
         
-        setInterval(() => {
-            console.log('%c', element);
-            devtoolsOpen = false;
-        }, 1000);
+        const statusDiv = document.getElementById('status');
+        
+        async function checkIncognito() {
+            try {
+                const result = await jsDetectIncognitoPrivateBrowsing();
+                
+                if (result.isPrivate) {
+                    statusDiv.className = 'status private';
+                    statusDiv.innerHTML = '🔒 PRIVATE/INCOGNITO MODE DETECTED 🔒<br><small>You are browsing in private mode</small>';
+                } else {
+                    statusDiv.className = 'status normal';
+                    statusDiv.innerHTML = '✅ NORMAL MODE ✅<br><small>Private browsing is NOT active</small>';
+                }
+                
+                // Optional: Send result to server
+                console.log('Detection result:', result);
+                
+            } catch (error) {
+                console.error('Detection failed:', error);
+                statusDiv.className = 'status private';
+                statusDiv.innerHTML = '⚠️ DETECTION ERROR ⚠️<br><small>Could not determine browser mode</small>';
+            }
+        }
+        
+        // Run detection on page load
+        await checkIncognito();
+        
+        // Make function global for button click
+        window.checkAgain = checkIncognito;
     </script>
 </body>
 </html>
